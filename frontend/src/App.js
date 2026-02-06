@@ -1,23 +1,17 @@
-import logo from './logo.svg';
 import './App.css';
+import React, { useState } from 'react';
+import Sidebar from './components/Sidebar';
+import DocumentsPage from './components/DocumentsPage';
 
 function App() {
+  const [activeMenu, setActiveMenu] = useState('documents');
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+      {activeMenu === 'documents' && <DocumentsPage />}
+      {activeMenu === 'dashboard' && <div style={{marginLeft: '250px', padding: '40px'}}>Tableau de Bord - En construction</div>}
+      {activeMenu === 'users' && <div style={{marginLeft: '250px', padding: '40px'}}>Utilisateurs - En construction</div>}
     </div>
   );
 }

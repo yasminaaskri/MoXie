@@ -1,0 +1,120 @@
+.sidebar {
+  width: 250px;
+  height: 100vh;
+  background: linear-gradient(180deg, #c17a6f 0%, #8b5a52 50%, #2c2c2c 100%);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar-header {
+  padding: 40px 25px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-logo {
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  margin: 0 0 15px 0;
+  font-family: 'Playfair Display', serif;
+}
+
+.sidebar-subtitle {
+  font-size: 13px;
+  font-style: italic;
+  opacity: 0.9;
+  margin: 5px 0;
+  line-height: 1.4;
+}
+
+.sidebar-org {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 30px 0;
+}
+
+.sidebar-item {
+  width: 100%;
+  padding: 18px 25px;
+  background: none;
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  text-align: left;
+  border-left: 4px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: rgba(255,255,255,0.1);
+  border-left-color: white;
+}
+
+.sidebar-item.active {
+  background: rgba(255,255,255,0.15);
+  border-left-color: white;
+  font-weight: 600;
+}
+
+.sidebar-icon {
+  font-size: 20px;
+}
+
+.sidebar-label {
+  font-family: 'Poppins', sans-serif;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: #c17a6f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.user-info {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.user-role {
+  font-size: 11px;
+  opacity: 0.7;
+}
