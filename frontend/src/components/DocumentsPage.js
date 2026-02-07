@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './DocumentsPage.css';
 
-const DocumentsPage = () => {
+const DocumentsPage = ({ mobileMenuOpen, setMobileMenuOpen }) => {
   const [documents, setDocuments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -125,8 +125,44 @@ const DocumentsPage = () => {
     }
   };
 
+  const handleDelete = async (doc) => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer "${doc.name}" ?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/documents/${doc._id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        loadDocuments();
+        
+        const successMsg = document.createElement('div');
+        successMsg.className = 'success-notification';
+        successMsg.textContent = '✓ Document supprimé avec succès';
+        document.body.appendChild(successMsg);
+        setTimeout(() => successMsg.remove(), 3000);
+      } else {
+        alert('Erreur lors de la suppression du document');
+      }
+    } catch (error) {
+      console.error('Erreur lors de la suppression:', error);
+      alert('Erreur lors de la suppression du document');
+    }
+  };
+
   return (
     <div className="documents-page">
+      {/* Header Mobile avec bouton menu */}
+      <div className="mobile-header">
+        <button className="menu-toggle" onClick={() => setMobileMenuOpen(true)}>
+          ☰
+        </button>
+        <h1>TILI</h1>
+        <div style={{width: '40px'}}></div> {/* Spacer pour centrer le titre */}
+      </div>
+
       <div className="page-header">
         <div>
           <h1 className="page-title">Documents</h1>
@@ -149,27 +185,73 @@ const DocumentsPage = () => {
           ) : documents.length === 0 ? (
             <div className="empty-state">Aucun document disponible</div>
           ) : (
-            documents.map(doc => (
-              <div key={doc._id} className="document-card">
-                <div className="document-icon">📄</div>
-                <div className="document-info">
-                  <h3 className="document-title">{doc.name}</h3>
-                  <p className="document-meta">
-                    Rapport • Ajouté le {doc.uploadDate} par {doc.uploadedBy}
-                  </p>
-                </div>
-                <div className="document-actions">
-                  <button className="btn-action btn-view" onClick={() => handleView(doc)}>
-                    <span className="action-icon">👁</span>
-                    VOIR
-                  </button>
-                  <button className="btn-action btn-download" onClick={() => handleDownload(doc)}>
-                    <span className="action-icon">📥</span>
-                    TÉLÉCHARGER
-                  </button>
-                </div>
+            <>
+              {/* Tableau pour desktop */}
+              <table className="documents-table">
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Type</th>
+                    <th>Taille</th>
+                    <th>Date</th>
+                    <th>Déposé par</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {documents.map(doc => (
+                    <tr key={doc._id}>
+                      <td>{doc.name}</td>
+                      <td>
+                        <span className={`badge badge-${doc.type}`}>
+                          {doc.type}
+                        </span>
+                      </td>
+                      <td>{doc.size}</td>
+                      <td>{doc.uploadDate}</td>
+                      <td>{doc.uploadedBy}</td>
+                      <td className="actions">
+                        <button className="btn btn-sm btn-info" onClick={() => handleView(doc)} title="Voir">
+                          👁️
+                        </button>
+                        <button className="btn btn-sm btn-success" onClick={() => handleDownload(doc)} title="Télécharger">
+                          📥
+                        </button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDelete(doc)} title="Supprimer">
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Cartes pour mobile */}
+              <div className="documents-cards">
+                {documents.map(doc => (
+                  <div key={doc._id} className="document-card-mobile">
+                    <h3>{doc.name}</h3>
+                    <div className="meta">
+                      <div>Type: {doc.type}</div>
+                      <div>Taille: {doc.size}</div>
+                      <div>Date: {doc.uploadDate}</div>
+                      <div>Par: {doc.uploadedBy}</div>
+                    </div>
+                    <div className="actions">
+                      <button className="btn-view" onClick={() => handleView(doc)}>
+                        👁️ Voir
+                      </button>
+                      <button className="btn-download" onClick={() => handleDownload(doc)}>
+                        📥 Télécharger
+                      </button>
+                      <button className="btn-delete" onClick={() => handleDelete(doc)}>
+                        🗑️ Supprimer
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))
+            </>
           )}
         </div>
       </div>
