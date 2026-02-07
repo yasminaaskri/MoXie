@@ -39,7 +39,7 @@ export default function Day({ day, rowIdx }) {
         </p>
       </header>
       <div
-        className="flex-1 cursor-pointer"
+         className="flex-1 cursor-pointer overflow-y-auto max-h-24"
         onClick={() => {
           setDaySelected(day);
           setShowEventModal(true);
