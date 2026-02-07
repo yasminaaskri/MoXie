@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Upload</title>
+</head>
+<body>
+    <h1>Test Upload Document</h1>
+    <form id="uploadForm">
+        <input type="file" id="fileInput" accept=".pdf,.doc,.docx" />
+        <select id="typeSelect">
+            <option value="rapports">Rapport</option>
+            <option value="comptes_rendus">Compte rendu</option>
+        </select>
+        <button type="submit">Upload</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const typeSelect = document.getElementById('typeSelect');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.textContent = 'Sélectionnez un fichier';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('type', typeSelect.value);
+            formData.append('uploadedBy', 'Test User');
+            
+            try {
+                resultDiv.textContent = 'Upload en cours...';
+                const response = await fetch('http://localhost:5000/api/documents/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                resultDiv.textContent = 'Succès: ' + JSON.stringify(result, null, 2);
+                console.log('Result:', result);
+            } catch (error) {
+                resultDiv.textContent = 'Erreur: ' + error.message;
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

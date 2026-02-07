@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test AI Endpoint</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #4b5563;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f3f4f6;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test de l'endpoint AI</h1>
+    
+    <button onclick="testAI()">Tester la génération de contenu</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testAI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Test en cours...';
+            resultDiv.className = '';
+            
+            try {
+                console.log('🧪 Envoi de la requête...');
+                
+                const response = await fetch('http://localhost:5000/api/ai/generate-content', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        topic: 'Rapport sur les ventes de février' 
+                    }),
+                });
+
+                console.log('📡 Status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Succès!', data);
+                    
+                    resultDiv.className = 'success';
+                    resultDiv.textContent = `✅ SUCCÈS!\n\nTitre: ${data.title}\n\nContenu:\n${data.content}`;
+                } else {
+                    const error = await response.text();
+                    console.error('❌ Erreur:', error);
+                    
+                    resultDiv.className = 'error';
+                    resultDiv.textContent = `❌ ERREUR ${response.status}\n\n${error}`;
+                }
+            } catch (error) {
+                console.error('❌ Erreur de connexion:', error);
+                
+                resultDiv.className = 'error';
+                resultDiv.textContent = `❌ ERREUR DE CONNEXION\n\n${error.message}\n\nAssurez-vous que le serveur backend est démarré sur le port 5000:\ncd backend\nnpm start`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Upload Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #ffffff;
+            color: #333333;
+        }
+        h1 {
+            color: #4b5563;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333333;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        input, select {
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #6b7280;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+        button:hover {
+            background: #4b5563;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Upload Document</h1>
+    
+    <form id="uploadForm">
+        <div class="form-group">
+            <label>Type de document:</label>
+            <select id="typeSelect">
+                <option value="rapports">Rapport</option>
+                <option value="comptes_rendus">Compte rendu</option>
+                <option value="documents_administratifs">Document administratif</option>
+                <option value="projets">Projet</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Fichier:</label>
+            <input type="file" id="fileInput" required />
+        </div>
+        
+        <button type="submit">Uploader le document</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const typeSelect = document.getElementById('typeSelect');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.className = 'error';
+                resultDiv.textContent = 'Veuillez sélectionner un fichier';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('type', typeSelect.value);
+            formData.append('uploadedBy', 'Test User');
+            
+            try {
+                resultDiv.textContent = 'Upload en cours...';
+                resultDiv.className = '';
+                
+                console.log('Envoi vers: http://localhost:5000/api/documents/upload');
+                
+                const response = await fetch('http://localhost:5000/api/documents/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Status:', response.status);
+                
+                const result = await response.json();
+                console.log('Résultat:', result);
+                
+                if (response.ok) {
+                    resultDiv.className = 'success';
+                    resultDiv.innerHTML = `
+                        <strong>✓ Succès!</strong><br>
+                        Document: ${result.name}<br>
+                        Type: ${result.type}<br>
+                        Taille: ${result.size}<br>
+                        ID: ${result._id}
+                    `;
+                    fileInput.value = '';
+                } else {
+                    resultDiv.className = 'error';
+                    resultDiv.textContent = '✗ Erreur: ' + (result.error || 'Erreur inconnue');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                resultDiv.className = 'error';
+                resultDiv.textContent = '✗ Erreur de connexion: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
