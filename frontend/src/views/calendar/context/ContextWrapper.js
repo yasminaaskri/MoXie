@@ -46,10 +46,26 @@ export default function ContextWrapper(props) {
   const [showEventModal, setShowEventModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [labels, setLabels] = useState([]);
+  /*
   const [savedEvents, dispatchCalEvent] = useReducer(
     savedEventsReducer,
     []
   );
+  */
+  const [savedEvents, dispatchCalEvent] = useReducer(
+    savedEventsReducer,
+    [],
+    (initial) => {
+      try {
+        const stored = localStorage.getItem("savedEvents");
+        return stored ? JSON.parse(stored) : initial;
+      } catch (e) {
+        return initial;
+      }
+    }
+  );
+
+  const [activeMeeting, setActiveMeeting] = useState(null);
 
   const [authUser, setAuthUser] = useState(null);
 
@@ -57,26 +73,31 @@ export default function ContextWrapper(props) {
   useEffect(() => {
     const loadEvents = async () => {
       try {
+        console.log("Fetching events from API...");
         const response = await getAllEvents();
+        console.log("Events loaded from API:", response.data);
         dispatchCalEvent({ type: "load", payload: response.data });
       } catch (error) {
         console.error("Error loading events:", error);
-        // Fallback to localStorage if API fails
-        const storageEvents = localStorage.getItem("savedEvents");
-        const parsedEvents = storageEvents ? JSON.parse(storageEvents) : [];
-        dispatchCalEvent({ type: "load", payload: parsedEvents });
+        // LocalStorage fallback now handled by reducer initializer
+        // const storageEvents = localStorage.getItem("savedEvents");
+        // const parsedEvents = storageEvents ? JSON.parse(storageEvents) : [];
+        // console.log("Events loaded from localStorage (fallback):", parsedEvents);
+        // dispatchCalEvent({ type: "load", payload: parsedEvents });
       }
     };
     loadEvents();
   }, []);
 
   const filteredEvents = useMemo(() => {
-    return savedEvents.filter((evt) =>
+    const filtered = savedEvents.filter((evt) =>
       labels
         .filter((lbl) => lbl.checked)
         .map((lbl) => lbl.label)
         .includes(evt.label)
     );
+    console.log("Filtered Events:", filtered); // Debug log
+    return filtered;
   }, [savedEvents, labels]);
 
   // Save to localStorage as backup
@@ -86,7 +107,7 @@ export default function ContextWrapper(props) {
 
   useEffect(() => {
     setLabels((prevLabels) => {
-      return [...new Set(savedEvents.map((evt) => evt.label))].map(
+      const newLabels = [...new Set(savedEvents.map((evt) => evt.label))].map(
         (label) => {
           const currentLabel = prevLabels.find(
             (lbl) => lbl.label === label
@@ -97,6 +118,8 @@ export default function ContextWrapper(props) {
           };
         }
       );
+      console.log("Updated Labels:", newLabels); // Debug log
+      return newLabels;
     });
   }, [savedEvents]);
 
@@ -114,7 +137,7 @@ export default function ContextWrapper(props) {
   useEffect(() => {
     console.log("Selected Event in ContextWrapper:", selectedEvent);
   }, [selectedEvent]);
-  
+
   function updateLabel(label) {
     setLabels(
       labels.map((lbl) => (lbl.label === label.label ? label : lbl))
@@ -140,8 +163,11 @@ export default function ContextWrapper(props) {
         labels,
         updateLabel,
         filteredEvents,
+        filteredEvents,
         authUser, // Replaced currentUser with authUser
         setAuthUser, // Replaced setCurrentUser with setAuthUser
+        activeMeeting,
+        setActiveMeeting,
       }}
     >
       {props.children}

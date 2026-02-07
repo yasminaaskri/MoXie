@@ -1,31 +1,62 @@
+import React, { useContext } from "react";
+import { JitsiMeeting } from '@jitsi/react-sdk';
+import GlobalContext from "../context/GlobalContext";
+import { FiLogOut } from "react-icons/fi";
 
-import { JaaSMeeting } from '@jitsi/react-sdk';
+const Meeting = ({ roomName }) => {
+  const { setActiveMeeting } = useContext(GlobalContext);
 
-const Meeting = ({ roomName = "onlineClassRoom" }) => {
-  const YOUR_APP_ID = 'vpaas-magic-cookie-7e7c9b78743e4ecd98829d308b506e1e'; // Replace with your actual app ID
+  const SpinnerView = () => {
+  return (
+    <div className="flex items-center justify-center h-full w-full bg-black/80 text-white">
+      <div className="flex flex-col items-center gap-4">
+        {/* Spinner */}
+        <div className="w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
 
-  const SpinnerView = () => <div>Loading...</div>; // Optional: Custom spinner component
+        {/* Text */}
+        <p className="text-lg font-medium tracking-wide">
+          Joining the meeting…
+        </p>
+      </div>
+    </div>
+  );
+};
+
 
   const handleApiReady = (externalApi) => {
     // Callback when the Jitsi Meet External API is ready
     console.log('Jitsi Meet API is ready:', externalApi);
     // You can use the externalApi object to interact with the meeting
+
+    // Remove auto-close listeners to allow "I am the host" login flow
+    // externalApi.addEventListeners({
+    //   videoConferenceLeft: () => setActiveMeeting(null),
+    //   readyToClose: () => setActiveMeeting(null)
+    // });
   };
 
   return (
-    <div style={{ height: '100vh', width: '100vw' }}>
-      <JaaSMeeting
-        appId={YOUR_APP_ID}
+    <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
+      <button
+        onClick={() => setActiveMeeting(null)}
+        className="absolute top-4 left-4 z-50 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg font-medium transition-colors"
+      >
+        <FiLogOut />
+        Leave Meeting
+      </button>
+      <JitsiMeeting
         roomName={roomName}
         configOverwrite={{
-          disableThirdPartyRequests: true,
-          disableLocalVideoFlip: true,
-          backgroundAlpha: 0.5,
+          startWithAudioMuted: true,
+          disableModeratorIndicator: true,
+          startScreenSharing: true,
+          enableEmailInStats: false,
         }}
         interfaceConfigOverwrite={{
-          VIDEO_LAYOUT_FIT: 'nocrop',
-          MOBILE_APP_PROMO: false,
-          TILE_VIEW_MAX_COLUMNS: 4,
+          DISABLE_JOIN_LEAVE_NOTIFICATIONS: true,
+        }}
+        userInfo={{
+          displayName: 'User'
         }}
         spinner={SpinnerView}
         onApiReady={handleApiReady}
@@ -37,5 +68,6 @@ const Meeting = ({ roomName = "onlineClassRoom" }) => {
     </div>
   );
 };
+
 
 export default Meeting;

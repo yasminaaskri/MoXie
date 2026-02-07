@@ -19,6 +19,8 @@ const GlobalContext = React.createContext({
   filteredEvents: [],
   authUser: null, // Replaced currentUser with authUser
   setAuthUser: () => {}, // Replaced setCurrentUser with setAuthUser
+  activeMeeting: null,
+  setActiveMeeting: () => {},
 });
 
 export default GlobalContext;

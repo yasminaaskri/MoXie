@@ -9,17 +9,16 @@ export default function UserEventModal() {
   const { setShowEventModal, selectedEvent } = useContext(GlobalContext);
   const navigate = useNavigate();
 
-  const handleJoinMeeting = () => {
-    if (selectedEvent && selectedEvent.meetingUrl) {
-      // If it's our internal meeting URL, navigate to it
-      if (selectedEvent.meetingUrl.startsWith('/meeting/')) {
-        navigate(selectedEvent.meetingUrl);
-      } else {
-        // If it's an external URL, open in new tab
-        window.open(selectedEvent.meetingUrl, '_blank');
-      }
+ const handleJoinMeeting = () => {
+  if (selectedEvent?.meetingUrl) {
+    // Check if internal (starts with "/meeting/") or external
+    if (selectedEvent.meetingUrl.startsWith('/meeting/')) {
+      navigate(selectedEvent.meetingUrl); // navigate inside app
+    } else {
+      window.open(selectedEvent.meetingUrl, "_blank"); // external URL
     }
-  };
+  }
+};
 
   const formatTime = (time) => {
     if (!time) return '';

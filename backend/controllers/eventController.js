@@ -2,7 +2,7 @@ const Event = require("../models/eventSchema.js");
 
 module.exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate('guests');
+    const events = await Event.find();
     res.status(200).json(events);
   } catch (err) {
     console.error("Error in getAllEvents controller:", err.message);

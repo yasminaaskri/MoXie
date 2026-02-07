@@ -8,6 +8,7 @@ import {
 } from "react-icons/fi";
 import { FaUniversalAccess, FaWheelchair } from "react-icons/fa";
 
+
 const labelsClasses = [
   { id: "purple", name: "Réunion", color: "bg-purple-500", text: "text-purple-800" },
   { id: "blue", name: "Tâche", color: "bg-blue-500", text: "text-blue-800" },
@@ -23,6 +24,7 @@ export default function EventModal() {
     daySelected,
     dispatchCalEvent,
     selectedEvent,
+    setActiveMeeting,
   } = useContext(GlobalContext);
 
   const [title, setTitle] = useState(selectedEvent ? selectedEvent.title : "");
@@ -36,7 +38,10 @@ export default function EventModal() {
   const [participants, setParticipants] = useState(selectedEvent ? selectedEvent.participants || "" : "");
   const [accessibilityNotes, setAccessibilityNotes] = useState(selectedEvent ? selectedEvent.accessibilityNotes || "" : "");
   const [reminder, setReminder] = useState(selectedEvent ? selectedEvent.reminder || "15" : "15");
-  
+
+
+
+
   const modalRef = useRef(null);
   const titleRef = useRef(null);
 
@@ -52,26 +57,29 @@ export default function EventModal() {
       setAccessibilityNotes(selectedEvent.accessibilityNotes || "");
       setReminder(selectedEvent.reminder || "15");
     }
-    
+
     // Focus sur le titre à l'ouverture
     if (titleRef.current) {
       titleRef.current.focus();
     }
-    
+
     // Gérer la fermeture avec Escape
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
         setShowEventModal(false);
       }
     };
-    
+
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [selectedEvent, setShowEventModal]);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    
+
+    // Generate meeting URL if not exists
+    const finalMeetingUrl = meetingUrl || `tili-meeting-${Date.now()}`;
+
     const calendarEvent = {
       title,
       description,
@@ -79,7 +87,7 @@ export default function EventModal() {
       day: daySelected.valueOf(),
       startTime,
       endTime,
-      meetingUrl,
+      meetingUrl: finalMeetingUrl,
       participants,
       accessibilityNotes,
       reminder,
@@ -121,19 +129,29 @@ export default function EventModal() {
         setShowEventModal(false);
       }
     }
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [setShowEventModal]);
 
+
+  useEffect(() => {
+    console.log("🟡 Selected Event:", selectedEvent);
+  }, [selectedEvent]);
+
+  useEffect(() => {
+    console.log("🔵 meetingUrl:", selectedEvent?.meetingUrl);
+  }, [selectedEvent]);
+
+
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div 
+      <div
         ref={modalRef}
         className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
       >
@@ -154,7 +172,7 @@ export default function EventModal() {
               <FiX className="w-5 h-5" />
             </button>
           </div>
-          
+
           {/* Indicateur d'accessibilité */}
           <div className="flex items-center gap-2 mt-2 text-sm bg-white/20 rounded-lg p-2">
             <FaUniversalAccess className="w-4 h-4" />
@@ -192,7 +210,7 @@ export default function EventModal() {
                 {daySelected.format("dddd DD MMMM YYYY")}
               </div>
             </div>
-            
+
             <div>
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
                 <FiClock /> Heure
@@ -267,19 +285,9 @@ export default function EventModal() {
           </div>
 
           {/* Lien de réunion */}
-          <div>
-            <label htmlFor="meetingUrl" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-              <FiLink /> Lien de visioconférence (optionnel)
-            </label>
-            <input
-              id="meetingUrl"
-              type="url"
-              value={meetingUrl}
-              placeholder="https://meet.jit.si/..."
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
-              onChange={(e) => setMeetingUrl(e.target.value)}
-            />
-          </div>
+
+
+
 
           {/* Rappel */}
           <div>
@@ -329,13 +337,27 @@ export default function EventModal() {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
             {selectedEvent && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-6 py-3 bg-red-50 text-red-700 font-semibold rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 flex-1"
-              >
-                Supprimer
-              </button>
+              <React.Fragment>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="px-6 py-3 bg-red-50 text-red-700 font-semibold rounded-lg hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500 flex-1"
+                >
+                  Supprimer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    console.log("🟢 Join Meeting clicked");
+                    setActiveMeeting(selectedEvent.meetingUrl);
+                    setShowEventModal(false);
+                  }}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 flex-1 flex items-center justify-center gap-2"
+                >
+                  <FiVideo />
+                  Join
+                </button>
+              </React.Fragment>
             )}
             <button
               type="button"

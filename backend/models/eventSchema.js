@@ -8,7 +8,8 @@ const eventSchema = new mongoose.Schema({
   endTime: String,
   label: String,
   meetingUrl: String,
-  guests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // Add guests field
+  guests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Add guests field
+  participants: String, // Added participants field to match frontend
 });
 
 module.exports = mongoose.model('Event', eventSchema);
