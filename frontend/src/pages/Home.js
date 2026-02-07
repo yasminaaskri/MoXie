@@ -1,9 +1,11 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { useAudioFeedback } from '../hooks/useAudioFeedback';
 
 export default function Home() {
   const { user } = useContext(AuthContext);
+  const audioFeedback = useAudioFeedback();
 
   const roleColors = {
     responsable: 'bg-red-600',
@@ -18,11 +20,23 @@ export default function Home() {
   };
 
   const stats = [
-    { label: 'Utilisateurs actifs', value: '24', color: 'bg-blue-600' },
-    { label: 'Projets en cours', value: '8', color: 'bg-green-600' },
-    { label: 'Tâches complétées', value: '156', color: 'bg-purple-600' },
-    { label: 'Rapports générés', value: '32', color: 'bg-orange-600' }
+    { label: 'Utilisateurs actifs', value: '24', color: 'bg-blue-600', description: '24 utilisateurs actifs sur la plateforme' },
+    { label: 'Projets en cours', value: '8', color: 'bg-green-600', description: '8 projets actuellement en cours' },
+    { label: 'Tâches complétées', value: '156', color: 'bg-purple-600', description: '156 tâches ont été complétées' },
+    { label: 'Rapports générés', value: '32', color: 'bg-orange-600', description: '32 rapports ont été générés' }
   ];
+
+  // Fonction pour lire une statistique
+  const readStat = (stat) => {
+    audioFeedback.playSound('click');
+    audioFeedback.speak(stat.description);
+  };
+
+  // Fonction pour lire une action
+  const readAction = (title, description) => {
+    audioFeedback.playSound('focus');
+    audioFeedback.speak(`${title}. ${description}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -74,15 +88,21 @@ export default function Home() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-sm p-6">
+            <button
+              key={index}
+              onClick={() => readStat(stat)}
+              onFocus={() => audioFeedback.playSound('focus')}
+              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow cursor-pointer text-left focus:outline-none focus:ring-4 focus:ring-blue-300"
+              aria-label={stat.description}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">{stat.label}</p>
                   <p className="text-2xl font-semibold text-gray-900 mt-2">{stat.value}</p>
                 </div>
-                <div className={`w-3 h-12 rounded-full ${stat.color}`}></div>
+                <div className={`w-3 h-12 rounded-full ${stat.color}`} aria-hidden="true"></div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -95,26 +115,44 @@ export default function Home() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Link 
                   to="/users" 
-                  className="group p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all"
+                  onClick={() => audioFeedback.playSound('navigation')}
+                  onFocus={() => readAction('Gestion des utilisateurs', 'Gérer les comptes et permissions')}
+                  className="group p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all focus:outline-none focus:ring-4 focus:ring-blue-300"
+                  aria-label="Gestion des utilisateurs - Gérer les comptes et permissions"
                 >
                   <h4 className="font-medium text-gray-900 mb-1">Gestion des utilisateurs</h4>
                   <p className="text-sm text-gray-600">Gérer les comptes et permissions</p>
                 </Link>
 
-                <div className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer">
+                <button
+                  onClick={() => audioFeedback.announceWarning('Fonctionnalité Rapports en cours de développement')}
+                  onFocus={() => readAction('Rapports', 'Générer des analyses')}
+                  className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer text-left focus:outline-none focus:ring-4 focus:ring-green-300"
+                  aria-label="Rapports - Générer des analyses"
+                >
                   <h4 className="font-medium text-gray-900 mb-1">Rapports</h4>
                   <p className="text-sm text-gray-600">Générer des analyses</p>
-                </div>
+                </button>
 
-                <div className="group p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer">
+                <button
+                  onClick={() => audioFeedback.announceWarning('Fonctionnalité Paramètres en cours de développement')}
+                  onFocus={() => readAction('Paramètres', 'Configuration du système')}
+                  className="group p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer text-left focus:outline-none focus:ring-4 focus:ring-purple-300"
+                  aria-label="Paramètres - Configuration du système"
+                >
                   <h4 className="font-medium text-gray-900 mb-1">Paramètres</h4>
                   <p className="text-sm text-gray-600">Configuration du système</p>
-                </div>
+                </button>
 
-                <div className="group p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all cursor-pointer">
+                <button
+                  onClick={() => audioFeedback.announceWarning('Fonctionnalité Analytics en cours de développement')}
+                  onFocus={() => readAction('Analytics', 'Données et métriques')}
+                  className="group p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all cursor-pointer text-left focus:outline-none focus:ring-4 focus:ring-orange-300"
+                  aria-label="Analytics - Données et métriques"
+                >
                   <h4 className="font-medium text-gray-900 mb-1">Analytics</h4>
                   <p className="text-sm text-gray-600">Données et métriques</p>
-                </div>
+                </button>
               </div>
             </div>
           </div>

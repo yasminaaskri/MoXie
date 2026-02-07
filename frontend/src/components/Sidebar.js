@@ -5,7 +5,16 @@ import { useAccessibility } from './AccessibilityProvider';
 
 export default function Sidebar(){
   const { user, logout } = useContext(AuthContext);
-  const { announce } = useAccessibility();
+  
+  // Safe accessibility hook usage with fallback
+  let announce = () => {};
+  try {
+    const accessibility = useAccessibility();
+    announce = accessibility.announce;
+  } catch (error) {
+    console.warn('AccessibilityProvider not found, using fallback');
+  }
+  
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 

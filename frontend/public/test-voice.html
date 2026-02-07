@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Synthèse Vocale</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .error {
+            background: #f44336;
+        }
+        .error:hover {
+            background: #da190b;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔊 Test de Synthèse Vocale</h1>
+    
+    <div class="test-box">
+        <h2>Test 1 : Vérification du Support</h2>
+        <button onclick="testSupport()">Vérifier le Support</button>
+        <div id="support-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Test 2 : Test Simple</h2>
+        <button onclick="testSimple()">Dire "Bonjour"</button>
+        <div id="simple-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Test 3 : Test en Français</h2>
+        <button onclick="testFrench()">Dire "Bienvenue sur TILI"</button>
+        <div id="french-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Test 4 : Test avec Callback</h2>
+        <button onclick="testCallback()">Test avec Événements</button>
+        <div id="callback-result"></div>
+    </div>
+    
+    <div class="test-box">
+        <h2>Test 5 : Liste des Voix</h2>
+        <button onclick="listVoices()">Afficher les Voix Disponibles</button>
+        <div id="voices-result"></div>
+    </div>
+
+    <script>
+        function log(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.textContent = message;
+            element.appendChild(div);
+            console.log(message);
+        }
+
+        function testSupport() {
+            const resultId = 'support-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            if ('speechSynthesis' in window) {
+                log(resultId, '✅ speechSynthesis est supporté', 'success');
+                log(resultId, `État: ${window.speechSynthesis.speaking ? 'En train de parler' : 'Silencieux'}`, 'info');
+                log(resultId, `En pause: ${window.speechSynthesis.paused}`, 'info');
+                log(resultId, `En attente: ${window.speechSynthesis.pending}`, 'info');
+            } else {
+                log(resultId, '❌ speechSynthesis N\'EST PAS supporté', 'fail');
+                log(resultId, 'Utilisez Chrome ou Edge', 'fail');
+            }
+        }
+
+        function testSimple() {
+            const resultId = 'simple-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            try {
+                log(resultId, '🔊 Tentative de parole...', 'info');
+                
+                const utterance = new SpeechSynthesisUtterance('Bonjour');
+                
+                utterance.onstart = () => {
+                    log(resultId, '✅ Parole démarrée', 'success');
+                };
+                
+                utterance.onend = () => {
+                    log(resultId, '✅ Parole terminée', 'success');
+                };
+                
+                utterance.onerror = (event) => {
+                    log(resultId, `❌ Erreur: ${event.error}`, 'fail');
+                };
+                
+                window.speechSynthesis.speak(utterance);
+                log(resultId, '📤 Commande envoyée', 'info');
+                
+            } catch (error) {
+                log(resultId, `❌ Exception: ${error.message}`, 'fail');
+            }
+        }
+
+        function testFrench() {
+            const resultId = 'french-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            try {
+                log(resultId, '🔊 Test en français...', 'info');
+                
+                window.speechSynthesis.cancel(); // Annuler toute parole en cours
+                
+                const utterance = new SpeechSynthesisUtterance('Bienvenue sur TILI, votre plateforme de gestion');
+                utterance.lang = 'fr-FR';
+                utterance.rate = 0.9;
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                utterance.onstart = () => {
+                    log(resultId, '✅ Parole démarrée', 'success');
+                };
+                
+                utterance.onend = () => {
+                    log(resultId, '✅ Parole terminée', 'success');
+                };
+                
+                utterance.onerror = (event) => {
+                    log(resultId, `❌ Erreur: ${event.error}`, 'fail');
+                };
+                
+                window.speechSynthesis.speak(utterance);
+                log(resultId, '📤 Commande envoyée', 'info');
+                
+            } catch (error) {
+                log(resultId, `❌ Exception: ${error.message}`, 'fail');
+            }
+        }
+
+        function testCallback() {
+            const resultId = 'callback-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            log(resultId, '🔊 Test avec tous les événements...', 'info');
+            
+            const utterance = new SpeechSynthesisUtterance('Test complet avec événements');
+            utterance.lang = 'fr-FR';
+            
+            utterance.onstart = () => {
+                log(resultId, '✅ onstart: Parole démarrée', 'success');
+            };
+            
+            utterance.onend = () => {
+                log(resultId, '✅ onend: Parole terminée', 'success');
+            };
+            
+            utterance.onerror = (event) => {
+                log(resultId, `❌ onerror: ${event.error}`, 'fail');
+            };
+            
+            utterance.onpause = () => {
+                log(resultId, '⏸️ onpause: Parole en pause', 'info');
+            };
+            
+            utterance.onresume = () => {
+                log(resultId, '▶️ onresume: Parole reprise', 'info');
+            };
+            
+            utterance.onboundary = (event) => {
+                log(resultId, `📍 onboundary: ${event.name} à ${event.charIndex}`, 'info');
+            };
+            
+            window.speechSynthesis.speak(utterance);
+            log(resultId, '📤 Commande envoyée', 'info');
+        }
+
+        function listVoices() {
+            const resultId = 'voices-result';
+            document.getElementById(resultId).innerHTML = '';
+            
+            const voices = window.speechSynthesis.getVoices();
+            
+            if (voices.length === 0) {
+                log(resultId, '⚠️ Aucune voix disponible pour le moment', 'fail');
+                log(resultId, 'Attendez quelques secondes et réessayez', 'info');
+                
+                // Réessayer après un délai
+                setTimeout(() => {
+                    const voicesRetry = window.speechSynthesis.getVoices();
+                    if (voicesRetry.length > 0) {
+                        displayVoices(resultId, voicesRetry);
+                    }
+                }, 1000);
+            } else {
+                displayVoices(resultId, voices);
+            }
+        }
+
+        function displayVoices(resultId, voices) {
+            log(resultId, `✅ ${voices.length} voix disponibles:`, 'success');
+            
+            const frenchVoices = voices.filter(v => v.lang.startsWith('fr'));
+            log(resultId, `🇫🇷 ${frenchVoices.length} voix françaises`, 'info');
+            
+            frenchVoices.forEach((voice, index) => {
+                log(resultId, `${index + 1}. ${voice.name} (${voice.lang}) ${voice.default ? '⭐ Par défaut' : ''}`, 'info');
+            });
+        }
+
+        // Charger les voix au démarrage
+        window.speechSynthesis.onvoiceschanged = () => {
+            console.log('✅ Voix chargées');
+        };
+    </script>
+</body>
+</html>
