@@ -3,6 +3,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const pdfParse = require('pdf-parse');
 require('dotenv').config();
 
 const connectDB = require('./config/database');
@@ -234,6 +235,244 @@ app.get('/api/documents/stats', async (req, res) => {
   }
 });
 
+// Extraire le texte d'un document pour la synthèse vocale
+app.get('/api/documents/:id/text', async (req, res) => {
+  try {
+    const doc = await Document.findById(req.params.id);
+    
+    if (!doc) {
+      return res.status(404).json({ error: 'Document non trouvé' });
+    }
+
+    // Vérifier que le fichier existe
+    if (!fs.existsSync(doc.path)) {
+      return res.status(404).json({ error: 'Fichier physique non trouvé' });
+    }
+
+    const fileExtension = path.extname(doc.name).toLowerCase();
+
+    // Extraire le texte selon le type de fichier
+    if (fileExtension === '.pdf') {
+      try {
+        const dataBuffer = fs.readFileSync(doc.path);
+        const pdfData = await pdfParse(dataBuffer);
+        
+        res.json({ 
+          text: pdfData.text,
+          pages: pdfData.numpages,
+          info: pdfData.info
+        });
+      } catch (pdfError) {
+        console.error('Erreur extraction PDF:', pdfError);
+        res.status(500).json({ 
+          error: 'Erreur lors de l\'extraction du texte du PDF',
+          fallback: `Document PDF: ${doc.name}. Ce document contient ${doc.size} de données. L'extraction automatique du texte n'est pas disponible pour ce fichier.`
+        });
+      }
+    } else if (['.txt', '.md'].includes(fileExtension)) {
+      // Fichiers texte simples
+      const text = fs.readFileSync(doc.path, 'utf-8');
+      res.json({ text });
+    } else {
+      // Pour les autres types (Word, Excel, etc.)
+      res.json({ 
+        text: `Document ${doc.name}. Type: ${doc.type}. Taille: ${doc.size}. Déposé le ${doc.uploadDate} par ${doc.uploadedBy}. L'extraction automatique du texte n'est pas encore disponible pour ce type de fichier. Veuillez ouvrir le document pour consulter son contenu.`
+      });
+    }
+  } catch (error) {
+    console.error('Erreur:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Serveur backend démarré sur le port ${PORT}`);
 });
+
+// ==================== AI PDF GENERATION ENDPOINT ====================
+const PDFDocument = require('pdfkit');
+
+app.post('/api/ai/generate-pdf', async (req, res) => {
+  try {
+    const { title, content, uploadedBy } = req.body;
+
+    if (!content) {
+      return res.status(400).json({ error: 'Le contenu est requis' });
+    }
+
+    // Create PDF
+    const doc = new PDFDocument();
+    const filename = `AI-${Date.now()}-${title.replace(/[^a-z0-9]/gi, '_')}.pdf`;
+    const filepath = path.join('uploads', filename);
+
+    // Pipe PDF to file
+    const writeStream = fs.createWriteStream(filepath);
+    doc.pipe(writeStream);
+
+    // Add content to PDF
+    doc.fontSize(24).text(title || 'Document sans titre', { align: 'center' });
+    doc.moveDown();
+    doc.fontSize(12).text(content, { align: 'justify' });
+    doc.end();
+
+    // Wait for PDF to be written
+    writeStream.on('finish', async () => {
+      // Get file stats
+      const stats = fs.statSync(filepath);
+      const fileSizeInBytes = stats.size;
+      const fileSizeInKB = (fileSizeInBytes / 1024).toFixed(2);
+
+      // Save to database
+      const newDocument = new Document({
+        name: `${title}.pdf`,
+        filename: filename,
+        type: 'documents_administratifs',
+        size: `${fileSizeInKB} KB`,
+        uploadDate: new Date().toISOString().split('T')[0],
+        uploadedBy: uploadedBy || 'Assistant IA',
+        path: filepath
+      });
+
+      await newDocument.save();
+
+      res.json({
+        message: 'PDF créé avec succès',
+        name: newDocument.name,
+        _id: newDocument._id
+      });
+    });
+
+    writeStream.on('error', (error) => {
+      console.error('Erreur lors de l\'écriture du PDF:', error);
+      res.status(500).json({ error: 'Erreur lors de la création du PDF' });
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la génération du PDF:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la génération du PDF' });
+  }
+});
+
+// ==================== AI CONTENT GENERATION ENDPOINT ====================
+app.post('/api/ai/generate-content', async (req, res) => {
+  try {
+    const { topic } = req.body;
+
+    if (!topic) {
+      return res.status(400).json({ error: 'Le sujet est requis' });
+    }
+
+    // Simulate AI content generation (you can replace this with OpenAI API)
+    const generatedContent = generateAIContent(topic);
+
+    res.json({
+      title: generatedContent.title,
+      content: generatedContent.content
+    });
+
+  } catch (error) {
+    console.error('Erreur lors de la génération du contenu:', error);
+    res.status(500).json({ error: 'Erreur serveur lors de la génération du contenu' });
+  }
+});
+
+// AI Content Generator Function (Simulated - Replace with OpenAI API)
+function generateAIContent(topic) {
+  // Extract key information from topic
+  const topicLower = topic.toLowerCase();
+  
+  // Generate title
+  let title = topic.charAt(0).toUpperCase() + topic.slice(1);
+  if (!title.includes('rapport') && !title.includes('document') && !title.includes('guide')) {
+    title = `Document sur ${title}`;
+  }
+
+  // Generate comprehensive content based on topic
+  let content = '';
+
+  // Introduction
+  content += `INTRODUCTION\n\n`;
+  content += `Ce document présente une analyse détaillée concernant ${topic}. `;
+  content += `L'objectif est de fournir une vue d'ensemble complète et des recommandations pratiques.\n\n`;
+
+  // Main content based on keywords
+  if (topicLower.includes('rapport') || topicLower.includes('vente') || topicLower.includes('résultat')) {
+    content += `ANALYSE DES RÉSULTATS\n\n`;
+    content += `Les données recueillies montrent une évolution significative dans le domaine concerné. `;
+    content += `Plusieurs facteurs clés ont été identifiés comme ayant un impact majeur sur les performances.\n\n`;
+    
+    content += `POINTS CLÉS\n\n`;
+    content += `1. Amélioration continue des processus\n`;
+    content += `2. Optimisation des ressources disponibles\n`;
+    content += `3. Renforcement de la collaboration entre équipes\n`;
+    content += `4. Mise en place de nouvelles stratégies efficaces\n\n`;
+  } 
+  else if (topicLower.includes('lettre') || topicLower.includes('motivation') || topicLower.includes('candidature')) {
+    content += `Madame, Monsieur,\n\n`;
+    content += `Je me permets de vous adresser ma candidature pour le poste mentionné. `;
+    content += `Fort d'une expérience significative dans le domaine, je suis convaincu de pouvoir apporter `;
+    content += `une contribution positive à votre organisation.\n\n`;
+    
+    content += `Mes compétences incluent :\n`;
+    content += `- Excellente capacité d'adaptation et d'apprentissage\n`;
+    content += `- Esprit d'équipe et sens de la communication\n`;
+    content += `- Rigueur et organisation dans le travail\n`;
+    content += `- Motivation et engagement professionnel\n\n`;
+    
+    content += `Je reste à votre disposition pour un entretien afin de discuter plus en détail de ma candidature.\n\n`;
+    content += `Cordialement,`;
+  }
+  else if (topicLower.includes('guide') || topicLower.includes('manuel') || topicLower.includes('tutoriel')) {
+    content += `OBJECTIF DU GUIDE\n\n`;
+    content += `Ce guide a pour but de fournir des instructions claires et pratiques concernant ${topic}. `;
+    content += `Il s'adresse à tous les utilisateurs souhaitant approfondir leurs connaissances.\n\n`;
+    
+    content += `ÉTAPES PRINCIPALES\n\n`;
+    content += `1. Préparation et planification\n`;
+    content += `   - Identifier les besoins spécifiques\n`;
+    content += `   - Rassembler les ressources nécessaires\n\n`;
+    
+    content += `2. Mise en œuvre\n`;
+    content += `   - Suivre les procédures établies\n`;
+    content += `   - Documenter chaque étape\n\n`;
+    
+    content += `3. Évaluation et amélioration\n`;
+    content += `   - Mesurer les résultats obtenus\n`;
+    content += `   - Identifier les axes d'amélioration\n\n`;
+  }
+  else {
+    // Generic content
+    content += `CONTEXTE\n\n`;
+    content += `Dans le cadre de ${topic}, il est essentiel de comprendre les enjeux et les opportunités qui se présentent. `;
+    content += `Cette analyse vise à fournir une perspective claire et actionnable.\n\n`;
+    
+    content += `DÉVELOPPEMENT\n\n`;
+    content += `Les aspects suivants méritent une attention particulière :\n\n`;
+    content += `• Analyse approfondie de la situation actuelle\n`;
+    content += `• Identification des défis et opportunités\n`;
+    content += `• Proposition de solutions adaptées\n`;
+    content += `• Plan d'action concret et réalisable\n\n`;
+    
+    content += `RECOMMANDATIONS\n\n`;
+    content += `Pour optimiser les résultats, il est recommandé de :\n`;
+    content += `- Maintenir une communication claire et régulière\n`;
+    content += `- Suivre les indicateurs de performance\n`;
+    content += `- Adapter les stratégies selon les besoins\n`;
+    content += `- Favoriser l'innovation et l'amélioration continue\n\n`;
+  }
+
+  // Conclusion
+  content += `CONCLUSION\n\n`;
+  content += `En conclusion, ${topic} représente un domaine important nécessitant une attention particulière. `;
+  content += `Les recommandations présentées dans ce document visent à faciliter la prise de décision `;
+  content += `et à optimiser les résultats. Une mise en œuvre rigoureuse de ces suggestions permettra `;
+  content += `d'atteindre les objectifs fixés de manière efficace et durable.\n\n`;
+  
+  content += `Document généré automatiquement par l'Assistant IA TILI\n`;
+  content += `Date : ${new Date().toLocaleDateString('fr-FR')}`;
+
+  return {
+    title: title,
+    content: content
+  };
+}

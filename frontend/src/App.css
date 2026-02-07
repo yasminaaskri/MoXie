@@ -8,8 +8,10 @@ body {
   font-family: 'Poppins', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #ffffff;
 }
 
 .App {
   min-height: 100vh;
+  background: #ffffff;
 }

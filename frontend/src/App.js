@@ -2,6 +2,7 @@ import './App.css';
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
 import DocumentsPage from './components/DocumentsPage';
+import VoiceAIAssistant from './components/VoiceAIAssistant';
 
 function App() {
   const [activeMenu, setActiveMenu] = useState('documents');
@@ -21,14 +22,9 @@ function App() {
           setMobileMenuOpen={setMobileMenuOpen}
         />
       )}
-      {activeMenu === 'dashboard' && (
-        <div style={{marginLeft: '250px', padding: '40px'}}>
-          <h1>Tableau de Bord - En construction</h1>
-        </div>
-      )}
-      {activeMenu === 'users' && (
-        <div style={{marginLeft: '250px', padding: '40px'}}>
-          <h1>Utilisateurs - En construction</h1>
+      {activeMenu === 'voice-ai' && (
+        <div style={{marginLeft: '250px', padding: '40px', background: '#f8f9fa', minHeight: '100vh'}}>
+          <VoiceAIAssistant />
         </div>
       )}
     </div>
