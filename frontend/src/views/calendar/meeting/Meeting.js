@@ -117,7 +117,7 @@ const Meeting = ({ roomName }) => {
   };
 
   return (
-    <div style={{ height: '100vh', width: '100vw', position: 'relative' }}>
+    <div style={{ height: 'calc(100vh - 100px)', width: '100%', position: 'relative' }}>
       <button
         onClick={handleLeave}
         className="absolute top-4 left-4 z-50 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg font-medium transition-colors"

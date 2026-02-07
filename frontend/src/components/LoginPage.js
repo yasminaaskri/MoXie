@@ -1,151 +1,154 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { FiMic, FiLock, FiMail, FiUser, FiInfo } from 'react-icons/fi';
 
-const LoginPage = ({ onLogin }) => {
+const LoginPage = ({ onLogin, onNavigateToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLogin, setIsLogin] = useState(true);
+  const [isListening, setIsListening] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulation de connexion
-    if (email && password) {
-      onLogin();
+  // Simulation of voice input (Alt+V)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.altKey && e.key === 'v') {
+        toggleVoiceInput();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const toggleVoiceInput = () => {
+    setIsListening(!isListening);
+    if (!isListening) {
+      setTimeout(() => {
+        setEmail('admin@tili.tn');
+        setPassword('password123');
+        setIsListening(false);
+      }, 1500);
     }
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin({ name: 'Mohamed Aziz', role: 'Responsable', email: email });
+  };
+
   return (
-    <div className="min-h-screen flex">
-      {/* Sidebar gauche - cachée sur mobile */}
-      <div className="hidden lg:flex lg:w-64 bg-gradient-to-b from-primary-600 via-primary-700 to-gray-900 text-white flex-col p-8">
-        <div className="mb-12">
-          <h1 className="text-5xl font-bold tracking-wider mb-3">TILI</h1>
-          <p className="text-sm text-white/80">Plateforme de Gestion Interne</p>
+    <div className="min-h-screen bg-[#4a5568] flex items-center justify-center lg:pl-64 p-4 font-sans">
+      {/* Sidebar for Auth Pages (matching RegisterPage) */}
+      <div className="fixed left-0 top-0 h-full w-64 bg-[#3d4654] border-r border-[#4e5a6b] hidden lg:block">
+        <div className="p-8">
+          <h1 className="text-white text-2xl font-bold tracking-widest font-serif">TILI</h1>
+          <p className="text-gray-400 text-xs mt-1">Plateforme de Gestion</p>
         </div>
-        
-        <nav className="space-y-4">
+        <nav className="mt-10 px-4 space-y-2">
           <button
-            onClick={() => setIsLogin(true)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              isLogin ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
+            className="w-full text-left px-4 py-3 rounded-lg bg-white text-gray-800 shadow-lg text-sm font-bold"
           >
-            <span className="text-xl">🔐</span>
-            <span>Login</span>
+            Connexion
           </button>
-          
           <button
-            onClick={() => setIsLogin(false)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-              !isLogin ? 'bg-white/20' : 'hover:bg-white/10'
-            }`}
+            onClick={onNavigateToRegister}
+            className="w-full text-left px-4 py-3 rounded-lg text-gray-400 hover:bg-[#4e5a6b] hover:text-white transition-colors text-sm font-medium"
           >
-            <span className="text-xl">📝</span>
-            <span>Sign Up</span>
+            Inscription
           </button>
         </nav>
+
+        {/* Floating Assistant Card */}
+        <div className="absolute bottom-10 left-4 right-4 bg-white rounded-xl p-4 shadow-2xl">
+          <div className="flex gap-2">
+            <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 flex-shrink-0">
+              <FiInfo className="w-4 h-4" />
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-gray-800">Assistant Vocal</h4>
+              <p className="text-[10px] text-gray-500 leading-tight mt-1">Cliquez pour démarrer une conversation guidée par la voix</p>
+              <button type="button" className="mt-2 w-full bg-[#10b981] text-white text-[10px] py-2 rounded-lg font-bold hover:bg-[#059669] transition-colors">
+                🎙️ Tester la voix
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Contenu principal */}
-      <div className="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-primary-600 via-primary-700 to-gray-900">
-        {/* Header mobile */}
-        <div className="lg:hidden absolute top-0 left-0 right-0 p-6 text-white">
-          <h1 className="text-4xl font-bold tracking-wider">TILI</h1>
-          <p className="text-sm text-white/80 mt-1">Plateforme de Gestion Interne</p>
+      <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-md p-10 relative overflow-hidden">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold text-gray-800">Connexion</h2>
+          <p className="text-sm text-gray-500 mt-2">Bienvenue sur la plateforme TILI</p>
         </div>
 
-        {/* Carte de connexion */}
-        <div className="w-full max-w-md">
-          {/* Logo centré - visible sur mobile */}
-          <div className="text-center mb-8 lg:mb-12 mt-20 lg:mt-0">
-            <h1 className="text-5xl lg:text-6xl font-bold text-white tracking-wider mb-2">
-              TILI
-            </h1>
-            <p className="text-white/90 text-sm lg:text-base">
-              Plateforme de Gestion Interne
-            </p>
-          </div>
-
-          {/* Formulaire */}
-          <div className="bg-white rounded-2xl shadow-2xl p-6 lg:p-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-6 lg:mb-8 text-center">
-              {isLogin ? 'Se connecter' : "S'inscrire"}
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
-                  className="w-full px-4 py-3 lg:py-4 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-base"
-                  required
-                />
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="space-y-1">
+            <label className="block text-sm font-bold text-gray-700">Adresse Email</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiMail className="h-5 w-5 text-gray-400" />
               </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mot de passe
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 lg:py-4 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all outline-none text-base"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 lg:py-4 rounded-xl font-semibold text-base lg:text-lg hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg hover:shadow-xl active:scale-98 min-h-[48px]"
-              >
-                {isLogin ? 'Se connecter' : "S'inscrire"}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {isLogin ? "Pas encore de compte ? " : "Déjà un compte ? "}
-                <button
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="text-blue-600 font-semibold hover:underline"
-                >
-                  {isLogin ? "S'inscrire" : "Se connecter"}
-                </button>
-              </p>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="block w-full px-10 py-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500 transition-all text-gray-700"
+                placeholder="votre@email.com"
+              />
             </div>
           </div>
 
-          {/* Boutons mobile en bas */}
-          <div className="lg:hidden flex gap-3 mt-6">
-            <button
-              onClick={() => setIsLogin(true)}
-              className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                isLogin
-                  ? 'bg-white text-primary-700'
-                  : 'bg-white/20 text-white hover:bg-white/30'
+          <div className="space-y-1">
+            <label className="block text-sm font-bold text-gray-700">Mot de passe</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiLock className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="block w-full px-10 py-3 border-2 border-gray-100 rounded-xl outline-none focus:border-blue-500 transition-all text-gray-700"
+                placeholder="********"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-[#1e293b] text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 transition-all shadow-xl shadow-slate-200 mt-4"
+          >
+            Se connecter
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleVoiceInput}
+            className={`w-full flex items-center justify-center gap-2 py-3 border-2 rounded-xl text-sm font-bold transition-all ${isListening
+                ? 'bg-red-50 border-red-200 text-red-600 animate-pulse'
+                : 'bg-white border-gray-100 text-gray-600 hover:bg-gray-50'
               }`}
-            >
-              🔐 Login
-            </button>
+          >
+            <FiMic className={isListening ? 'text-red-500' : 'text-gray-400'} />
+            {isListening ? 'Écoute en cours...' : 'Saisie vocale (Alt+V)'}
+          </button>
+
+          <div className="text-center text-sm pt-2">
+            <span className="text-gray-500">Pas encore de compte ? </span>
             <button
-              onClick={() => setIsLogin(false)}
-              className={`flex-1 py-3 rounded-xl font-semibold transition-all ${
-                !isLogin
-                  ? 'bg-white text-primary-700'
-                  : 'bg-white/20 text-white hover:bg-white/30'
-              }`}
+              type="button"
+              onClick={onNavigateToRegister}
+              className="font-bold text-blue-600 hover:text-blue-700 outline-none"
             >
-              📝 Sign Up
+              S'inscrire
             </button>
           </div>
-        </div>
+        </form>
       </div>
+
+      {/* Floating Design Elements (matching RegisterPage) */}
+      <button type="button" className="fixed top-8 right-8 w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center text-white shadow-lg">
+        <span className="text-lg">♫</span>
+      </button>
     </div>
   );
 };

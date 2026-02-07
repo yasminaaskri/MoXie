@@ -24,7 +24,7 @@ export default function UserCalendar() {
     <React.Fragment>
       {showEventModal && <EventModal />}
 
-      <div className="h-screen flex flex-col">
+      <div className="h-full flex flex-col">
         <CalendarHeader />
         <div className="flex flex-1">
           <Sidebar />

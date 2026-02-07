@@ -1,8 +1,11 @@
 import React from 'react';
+import { FiLogOut } from 'react-icons/fi';
 import './Sidebar.css';
 
-const Sidebar = ({ activeMenu, setActiveMenu, mobileOpen, setMobileOpen }) => {
+const Sidebar = ({ activeMenu, setActiveMenu, mobileOpen, setMobileOpen, user, onLogout }) => {
   const menuItems = [
+    { id: 'dashboard', icon: '📊', label: 'Tableau de bord' },
+    { id: 'users', icon: '👥', label: 'Utilisateurs' },
     { id: 'documents', icon: '📄', label: 'Documents' },
     { id: 'calendar', icon: '📅', label: 'Calendrier' },
     { id: 'voice-ai', icon: '🎤', label: 'Assistant Vocal IA' }
@@ -15,16 +18,18 @@ const Sidebar = ({ activeMenu, setActiveMenu, mobileOpen, setMobileOpen }) => {
     }
   };
 
+  const currentUser = user || { name: 'Mohamed Aziz', role: 'Administrateur' };
+
   return (
     <>
       {/* Overlay pour fermer le menu sur mobile */}
-      <div 
+      <div
         className={`sidebar-overlay ${mobileOpen ? 'active' : ''}`}
         onClick={() => setMobileOpen && setMobileOpen(false)}
         aria-hidden="true"
       ></div>
-      
-      <aside 
+
+      <aside
         className={`sidebar ${mobileOpen ? 'mobile-open' : ''}`}
         role="navigation"
         aria-label="Menu principal"
@@ -34,7 +39,7 @@ const Sidebar = ({ activeMenu, setActiveMenu, mobileOpen, setMobileOpen }) => {
           <p className="sidebar-subtitle">Plateforme de Gestion Interne</p>
           <p className="sidebar-org">Tunisia Inclusive Labor Institute</p>
         </div>
-        
+
         <nav className="sidebar-nav" role="menu">
           {menuItems.map(item => (
             <button
@@ -52,13 +57,22 @@ const Sidebar = ({ activeMenu, setActiveMenu, mobileOpen, setMobileOpen }) => {
         </nav>
 
         <div className="sidebar-footer" role="contentinfo">
-          <div className="user-profile">
-            <div className="user-avatar" aria-hidden="true">M</div>
+          <div className="user-profile mb-4">
+            <div className="user-avatar" aria-hidden="true">
+              {currentUser.name ? currentUser.name.charAt(0) : 'U'}
+            </div>
             <div className="user-info">
-              <div className="user-name">Mohamed Aziz Awadhi</div>
-              <div className="user-role">Administrateur</div>
+              <div className="user-name">{currentUser.name}</div>
+              <div className="user-role">{currentUser.role}</div>
             </div>
           </div>
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center gap-3 px-4 py-2 text-xs font-semibold text-red-300 hover:text-white hover:bg-red-900/40 rounded-lg transition-all"
+          >
+            <FiLogOut className="w-4 h-4" />
+            Déconnexion
+          </button>
         </div>
       </aside>
     </>
