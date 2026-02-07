@@ -56,3 +56,176 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* ===== ACCESSIBILITÉ ===== */
+
+/* Classe pour masquer visuellement mais garder pour les lecteurs d'écran */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus visible amélioré */
+*:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Skip links pour navigation clavier */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: #fff;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Mode contraste élevé */
+.high-contrast {
+  --bg: #000000;
+  --card: #ffffff;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --border: #000000;
+  --focus: #ffff00;
+}
+
+.high-contrast body {
+  background: var(--bg);
+  color: var(--text-primary);
+}
+
+.high-contrast .bg-white {
+  background: var(--card) !important;
+  border: 2px solid var(--border) !important;
+}
+
+.high-contrast .text-gray-900 {
+  color: var(--text-primary) !important;
+}
+
+.high-contrast .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.high-contrast *:focus {
+  outline: 3px solid var(--focus) !important;
+  outline-offset: 2px;
+}
+
+/* Tailles de police adaptatives */
+[data-font-size="small"] {
+  font-size: 14px;
+}
+
+[data-font-size="normal"] {
+  font-size: 16px;
+}
+
+[data-font-size="large"] {
+  font-size: 18px;
+}
+
+[data-font-size="xlarge"] {
+  font-size: 22px;
+}
+
+/* Mouvement réduit */
+[data-reduced-motion="true"] * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Amélioration des contrastes pour les boutons */
+.btn:focus,
+button:focus {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Amélioration des liens */
+a:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  text-decoration: underline;
+}
+
+/* Amélioration des formulaires */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-color: #3b82f6;
+}
+
+/* Indicateurs d'état pour les lecteurs d'écran */
+[aria-expanded="true"]::after {
+  content: " (ouvert)";
+  position: absolute;
+  left: -10000px;
+}
+
+[aria-expanded="false"]::after {
+  content: " (fermé)";
+  position: absolute;
+  left: -10000px;
+}
+
+/* Amélioration des tableaux pour l'accessibilité */
+table {
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+}
+
+/* Amélioration des modals */
+[role="dialog"] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Amélioration des alertes */
+[role="alert"] {
+  padding: 12px;
+  border-radius: 4px;
+  margin: 8px 0;
+}
+
+/* Amélioration de la navigation */
+nav[role="navigation"] ul {
+  list-style: none;
+  padding: 0;
+}
+
+/* Amélioration des régions principales */
+main[role="main"] {
+  min-height: 60vh;
+}
+
+/* Amélioration pour les utilisateurs de clavier uniquement */
+.keyboard-user *:focus {
+  outline: 3px solid #3b82f6 !important;
+  outline-offset: 2px;
+}

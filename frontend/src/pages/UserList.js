@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import { useSpeechSynthesis } from '../hooks/useSpeechSynthesis';
+import VoiceInput from '../components/VoiceInput';
 
 export default function UserList(){
   const [users, setUsers] = useState([]);
@@ -10,6 +12,7 @@ export default function UserList(){
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user: currentUser } = useContext(AuthContext);
+  const { speak } = useSpeechSynthesis();
 
   const roleLabels = {
     responsable: 'Responsable',
@@ -25,7 +28,9 @@ export default function UserList(){
 
   useEffect(()=>{
     loadUsers();
-  },[]);
+    // Annoncer la page au chargement
+    speak('Page de gestion des utilisateurs. Consultez la liste des utilisateurs et gérez leurs comptes.');
+  },[speak]);
 
   const loadUsers = async () => {
     try{ 
@@ -43,6 +48,10 @@ export default function UserList(){
     setFormData({ name: '', email: '', password: '', role: 'consultant' });
     setError('');
     setShowModal(true);
+    // Annoncer l'ouverture du modal de création
+    setTimeout(() => {
+      speak('Formulaire de création d\'utilisateur ouvert. Remplissez les informations requises.');
+    }, 500);
   };
 
   const openEditModal = (user) => {
@@ -50,6 +59,10 @@ export default function UserList(){
     setFormData({ name: user.name, email: user.email, password: '', role: user.role });
     setError('');
     setShowModal(true);
+    // Annoncer l'ouverture du modal de modification
+    setTimeout(() => {
+      speak(`Modification de l'utilisateur ${user.name}. Modifiez les informations nécessaires.`);
+    }, 500);
   };
 
   const closeModal = () => {
@@ -64,17 +77,23 @@ export default function UserList(){
     setLoading(true);
     setError('');
 
+    speak(editUser ? 'Mise à jour en cours...' : 'Création de l\'utilisateur en cours...');
+
     try {
       if (editUser) {
         const updates = { name: formData.name, role: formData.role };
         await api.put(`/users/${editUser._id}`, updates);
+        speak('Utilisateur mis à jour avec succès.');
       } else {
         await api.post('/auth/register', formData);
+        speak('Nouvel utilisateur créé avec succès.');
       }
       await loadUsers();
       closeModal();
     } catch (err) {
-      setError(err.response?.data?.message || 'Une erreur est survenue');
+      const errorMessage = err.response?.data?.message || 'Une erreur est survenue';
+      setError(errorMessage);
+      speak(`Erreur: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
@@ -83,12 +102,29 @@ export default function UserList(){
   const handleDelete = async (userId) => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return;
     
+    speak('Suppression de l\'utilisateur en cours...');
+    
     try {
       await api.delete(`/users/${userId}`);
       await loadUsers();
+      speak('Utilisateur supprimé avec succès.');
     } catch (err) {
+      speak('Erreur lors de la suppression de l\'utilisateur.');
       alert('Erreur lors de la suppression');
     }
+  };
+
+  const handleRoleChange = (e) => {
+    const selectedRole = e.target.value;
+    setFormData({...formData, role: selectedRole});
+    
+    const roleDescriptions = {
+      consultant: 'Consultant sélectionné. Accès limité en lecture.',
+      chef: 'Chef de projet sélectionné. Peut gérer les utilisateurs.',
+      responsable: 'Responsable sélectionné. Accès complet à toutes les fonctionnalités.'
+    };
+    
+    speak(roleDescriptions[selectedRole]);
   };
 
   const canDelete = currentUser?.role === 'responsable';
@@ -233,16 +269,18 @@ export default function UserList(){
                         <button 
                           onClick={() => openEditModal(u)}
                           className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                          aria-label={`Modifier ${u.name}`}
                         >
-                          ✏️
+                          Modifier
                         </button>
                       )}
                       {canDelete && (
                         <button 
                           onClick={() => handleDelete(u._id)}
                           className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
+                          aria-label={`Supprimer ${u.name}`}
                         >
-                          🗑️
+                          Supprimer
                         </button>
                       )}
                     </div>
@@ -275,64 +313,56 @@ export default function UserList(){
             </div>
             
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Nom complet
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                />
-              </div>
+              <VoiceInput
+                label="Nom complet"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="Nom et prénom de l'utilisateur"
+                required
+                autoFocus
+              />
               
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all disabled:bg-gray-100"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required
-                  disabled={!!editUser}
-                />
-              </div>
+              <VoiceInput
+                label="Email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
+                placeholder="adresse@email.com"
+                required
+                className={editUser ? 'bg-gray-100' : ''}
+                disabled={!!editUser}
+              />
               
               {!editUser && (
-                <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Mot de passe
-                  </label>
-                  <input
-                    type="password"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    required
-                    minLength="6"
-                  />
-                </div>
+                <VoiceInput
+                  label="Mot de passe"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({...formData, password: e.target.value})}
+                  placeholder="Mot de passe sécurisé"
+                  required
+                />
               )}
               
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Rôle
+                  <span className="text-red-500 ml-1" aria-label="obligatoire">*</span>
                 </label>
                 <select
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   value={formData.role}
-                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  onChange={handleRoleChange}
+                  onFocus={() => speak('Sélectionnez le rôle de l\'utilisateur dans l\'organisation')}
                   required
+                  aria-describedby="role-help"
                 >
                   <option value="consultant">Consultant</option>
                   <option value="chef">Chef de projet</option>
                   <option value="responsable">Responsable</option>
                 </select>
-                <div className="mt-2 p-3 bg-blue-50 rounded-lg text-xs text-gray-600 space-y-1">
+                <div id="role-help" className="mt-2 p-3 bg-blue-50 rounded-lg text-xs text-gray-600 space-y-1">
                   <div><strong>Consultant:</strong> Accès limité en lecture</div>
                   <div><strong>Chef de projet:</strong> Peut gérer les utilisateurs</div>
                   <div><strong>Responsable:</strong> Accès complet</div>
@@ -360,6 +390,19 @@ export default function UserList(){
                 >
                   {loading ? 'Enregistrement...' : (editUser ? 'Mettre à jour' : 'Créer')}
                 </button>
+              </div>
+
+              {/* Instructions vocales */}
+              <div className="mt-6 p-4 bg-blue-50 rounded-xl">
+                <h3 className="text-sm font-semibold text-blue-900 mb-2">
+                  Instructions vocales
+                </h3>
+                <ul className="text-xs text-blue-800 space-y-1">
+                  <li>• Naviguez avec <kbd className="px-1 py-0.5 bg-blue-100 rounded">Tab</kbd> entre les champs</li>
+                  <li>• Appuyez sur <kbd className="px-1 py-0.5 bg-blue-100 rounded">Alt + V</kbd> pour la saisie vocale</li>
+                  <li>• Parlez clairement après le signal sonore</li>
+                  <li>• Le système vous guide pour chaque champ</li>
+                </ul>
               </div>
             </form>
           </div>

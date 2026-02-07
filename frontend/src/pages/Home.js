@@ -17,89 +17,177 @@ export default function Home() {
     consultant: 'Consultant'
   };
 
+  const stats = [
+    { label: 'Utilisateurs actifs', value: '24', color: 'bg-blue-600' },
+    { label: 'Projets en cours', value: '8', color: 'bg-green-600' },
+    { label: 'Tâches complétées', value: '156', color: 'bg-purple-600' },
+    { label: 'Rapports générés', value: '32', color: 'bg-orange-600' }
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-6 lg:p-8">
-      {/* Welcome Section */}
-      <div className="text-center mb-6 md:mb-8">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-gray-900 mb-2">
-          Bienvenue sur TILI
-        </h1>
-        <p className="text-base md:text-lg text-gray-600">
-          Plateforme de Gestion Interne
-        </p>
-      </div>
-
-      {/* Feature Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 max-w-6xl mx-auto">
-        <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 text-white shadow-lg">
-          <div className="text-4xl mb-3">👥</div>
-          <div className="text-2xl md:text-3xl font-bold mb-2">Gestion</div>
-          <div className="text-sm md:text-base opacity-90">
-            Créez et gérez les comptes avec leurs rôles
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-lg">
-          <div className="text-4xl mb-3">🔐</div>
-          <div className="text-2xl md:text-3xl font-bold mb-2">Sécurité</div>
-          <div className="text-sm md:text-base opacity-90">
-            Authentification et droits différenciés
-          </div>
-        </div>
-        
-        <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white shadow-lg">
-          <div className="text-4xl mb-3">⚙️</div>
-          <div className="text-2xl md:text-3xl font-bold mb-2">Rôles</div>
-          <div className="text-sm md:text-base opacity-90">
-            Responsable, Chef de projet, Consultant
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Profile Card */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Votre profil</h2>
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-brown to-brand-brown-dark flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-              {user?.name?.[0]?.toUpperCase() || 'U'}
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-900">Tableau de bord</h1>
+              <p className="text-gray-600 mt-1">Vue d'ensemble de votre plateforme</p>
             </div>
-            <div className="flex-1 text-center sm:text-left">
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
-                {user?.name || 'Utilisateur'}
-              </h3>
-              <p className="text-gray-600 mb-3">{user?.email}</p>
-              <span className={`inline-block px-4 py-2 rounded-full text-white text-sm font-semibold ${roleColors[user?.role] || 'bg-gray-600'}`}>
+            <div className="text-right">
+              <p className="text-sm text-gray-500">
+                {new Date().toLocaleDateString('fr-FR', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* User Welcome */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-700 font-semibold text-lg">
+                {user?.name?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Bonjour, {user?.name || 'Utilisateur'}
+                </h2>
+                <p className="text-gray-600">{user?.email}</p>
+              </div>
+            </div>
+            <div>
+              <span className={`px-3 py-1 rounded-full text-white text-sm font-medium ${roleColors[user?.role] || 'bg-gray-600'}`}>
                 {roleLabels[user?.role] || 'Utilisateur'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Quick Access */}
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Accès rapide</h2>
-          <Link 
-            to="/users" 
-            className="block bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-xl p-6 hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-                👥
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-lg md:text-xl font-bold text-gray-900 mb-1">
-                  Utilisateurs
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat, index) => (
+            <div key={index} className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                  <p className="text-2xl font-semibold text-gray-900 mt-2">{stat.value}</p>
                 </div>
-                <div className="text-sm text-gray-600">
-                  Gérer les comptes utilisateurs
-                </div>
+                <div className={`w-3 h-12 rounded-full ${stat.color}`}></div>
               </div>
-              <svg className="w-6 h-6 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
             </div>
-          </Link>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6">Actions rapides</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Link 
+                  to="/users" 
+                  className="group p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all"
+                >
+                  <h4 className="font-medium text-gray-900 mb-1">Gestion des utilisateurs</h4>
+                  <p className="text-sm text-gray-600">Gérer les comptes et permissions</p>
+                </Link>
+
+                <div className="group p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer">
+                  <h4 className="font-medium text-gray-900 mb-1">Rapports</h4>
+                  <p className="text-sm text-gray-600">Générer des analyses</p>
+                </div>
+
+                <div className="group p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer">
+                  <h4 className="font-medium text-gray-900 mb-1">Paramètres</h4>
+                  <p className="text-sm text-gray-600">Configuration du système</p>
+                </div>
+
+                <div className="group p-4 border border-gray-200 rounded-lg hover:border-orange-300 hover:bg-orange-50 transition-all cursor-pointer">
+                  <h4 className="font-medium text-gray-900 mb-1">Analytics</h4>
+                  <p className="text-sm text-gray-600">Données et métriques</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Activity */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-6">Activité récente</h3>
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-blue-600 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Nouvel utilisateur créé</p>
+                  <p className="text-xs text-gray-500">Il y a 2 heures</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-green-600 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Rapport généré</p>
+                  <p className="text-xs text-gray-500">Il y a 4 heures</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-purple-600 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Paramètres mis à jour</p>
+                  <p className="text-xs text-gray-500">Hier</p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <div className="w-2 h-2 bg-orange-600 rounded-full mt-2"></div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Maintenance programmée</p>
+                  <p className="text-xs text-gray-500">Il y a 2 jours</p>
+                </div>
+              </div>
+            </div>
+            
+            <button className="w-full mt-6 text-center text-blue-600 hover:text-blue-700 font-medium text-sm py-2 hover:bg-blue-50 rounded-lg transition-colors">
+              Voir toute l'activité
+            </button>
+          </div>
+        </div>
+
+        {/* System Status */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">État du système</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div>
+                <h4 className="font-medium text-gray-900">Serveur</h4>
+                <p className="text-sm text-gray-600">Opérationnel</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <div>
+                <h4 className="font-medium text-gray-900">Base de données</h4>
+                <p className="text-sm text-gray-600">Connectée</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div>
+                <h4 className="font-medium text-gray-900">Maintenance</h4>
+                <p className="text-sm text-gray-600">Programmée</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
