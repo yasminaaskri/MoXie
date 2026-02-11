@@ -8,6 +8,7 @@ const pdfParse = require("pdf-parse");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const PDFDocument = require("pdfkit");
+const { generateAIContentWithOpenAI } = require("./ai-openai-integration");
 require("dotenv").config();
 
 // ==================== APP INIT ====================
@@ -116,6 +117,24 @@ app.delete("/api/documents/:id", async (req, res) => {
 });
 
 // ==================== AI PDF GENERATION ====================
+
+// Generate AI content
+app.post("/api/ai/generate-content", async (req, res) => {
+  try {
+    const { topic } = req.body;
+    if (!topic) return res.status(400).json({ error: "Sujet requis" });
+
+    console.log('🎯 Génération de contenu pour:', topic);
+    const generatedContent = await generateAIContentWithOpenAI(topic);
+    
+    res.json(generatedContent);
+  } catch (error) {
+    console.error('❌ Erreur génération contenu:', error);
+    res.status(500).json({ error: "Erreur lors de la génération du contenu" });
+  }
+});
+
+// Generate PDF from content
 app.post("/api/ai/generate-pdf", async (req, res) => {
   const { title, content, uploadedBy } = req.body;
   if (!content) return res.status(400).json({ error: "Contenu requis" });
